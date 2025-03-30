@@ -1,3 +1,4 @@
+// Garde les imports existants de Commit 3
 package src;
 
 import modele.Grille;
@@ -29,7 +30,7 @@ public class Demo extends JFrame {
 
 
     public static void main(String[] args) {
-        System.out.println("Lancement Bataille Navale (Affichage Grilles Vides)");
+        System.out.println("Lancement Bataille Navale");
 
         final int TAILLE_GRILLE = 10;
 
@@ -37,18 +38,23 @@ public class Demo extends JFrame {
         Grille grilleJoueur = new Grille(TAILLE_GRILLE, true);
         Grille grilleOrdinateur = new Grille(TAILLE_GRILLE, false);
 
-        // Navire porteAvion = new Navire(5);
-        // grilleJoueur.placerNavire(porteAvion, new Point(0, 0), false);
+        // Placement manuel d'un navire pour tester l'affichage
+        Navire porteAvion = new Navire(5); // Exe: Porte-avion
+        boolean placeOk = grilleJoueur.placerNavire(porteAvion, new Point(1, 1), false); // Horizontal en B2 (indices 1,1)
+        if (placeOk) {
+            System.out.println("Navire de test placé pour le joueur.");
+        } else {
+            System.err.println("ERREUR lors du placement du navire de test !");
+        }
 
         // Création de la Vue
         VuePanneauJeu panneauJeu = new VuePanneauJeu(grilleJoueur, grilleOrdinateur);
 
-        // Création de la Fenêtre
-        Demo fenetreJeu = new Demo(panneauJeu);
-
-        // Affichage de la Fenêtre
+        // Création et Affichage de la Fenêtre
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                 // Instanciation de la fenêtre DANS invokeLater
+                Demo fenetreJeu = new Demo(panneauJeu);
                 fenetreJeu.setVisible(true); // Rend la fenêtre visible
             }
         });
