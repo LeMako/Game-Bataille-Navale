@@ -5,6 +5,7 @@ import java.awt.Point;
 public class Case {
     private Point point;    // Position (x, y)
     private Navire navire;  // Référence au navire (null si vide)
+    private boolean touchee; // Ajouté: Indique si un tir a déjà visé cette case
 
     /**
      * Crée une case.
@@ -14,6 +15,7 @@ public class Case {
     public Case(Point point, Navire navire) {
         this.point = point;
         this.navire = navire;
+        this.touchee = false; // Initialisation à false
     }
 
     /**
@@ -40,4 +42,18 @@ public class Case {
         return this.point;
     }
 
+    /**
+     * Ajouté: Vérifie si cette case a déjà été la cible d'un tir.
+     * @return true si la case a été touchée, false sinon.
+     */
+    public boolean estTouchee() {
+        return this.touchee;
+    }
+
+    /**
+     * Ajouté: Marque cette case comme ayant été touchée par un tir.
+     */
+    public void recevoirTir() {
+        this.touchee = true;
+    }
 }

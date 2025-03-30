@@ -8,6 +8,9 @@ public class Grille {
     private int taille;
     private Case[][] cases;
     private boolean estGrilleHumain;
+    // Ajouté: Compteurs pour les tirs
+    private int score; // Nombre de tirs réussis (touché un bateau adverse sur CETTE grille)
+    private int tirsManques; // Nombre de tirs dans l'eau (ratés) sur CETTE grille
 
     /**
      * Construit une grille de jeu vide.
@@ -21,8 +24,10 @@ public class Grille {
         this.taille = taille;
         this.cases = new Case[taille][taille];
         this.estGrilleHumain = estGrilleHumain;
+        this.score = 0; // Initialisation
+        this.tirsManques = 0; // Initialisation
         initialiserGrille();
-        System.out.println("Création Grille taille " + taille + "x" + taille + " pour " + (estGrilleHumain ? "Joueur" : "Ordinateur"));
+        // System.out.println("Création Grille taille " + taille + "x" + taille + " pour " + (estGrilleHumain ? "Joueur" : "Ordinateur"));
     }
 
     /**
@@ -46,7 +51,6 @@ public class Grille {
 
     /**
      * Récupère la Case à une position donnée.
-     * Ajout: Vérification des limites.
      * @param x Coordonnée x.
      * @param y Coordonnée y.
      * @return La Case, ou null si hors grille.
@@ -55,7 +59,7 @@ public class Grille {
         if (x >= 0 && x < taille && y >= 0 && y < taille) {
             return this.cases[x][y];
         }
-        return null; // Coordonnées invalides
+        return null;
     }
 
      /**
@@ -65,7 +69,7 @@ public class Grille {
      */
     public Case getCase(Point p) {
         if (p == null) return null;
-        return getCase(p.x, p.y); // Utilise la vérification de l'autre méthode
+        return getCase(p.x, p.y);
     }
 
     /**
@@ -77,7 +81,7 @@ public class Grille {
     }
 
     /**
-     * Ajout: Vérifie si un point est dans les limites de la grille.
+     * Vérifie si un point est dans les limites de la grille.
      * @param point Le point à vérifier.
      * @return true si le point est valide, false sinon.
      */
@@ -86,7 +90,24 @@ public class Grille {
     }
 
     /**
-     * Ajout: Tente de placer un navire sur la grille.
+     * Ajouté: Retourne le score actuel sur cette grille (nombre de tirs adverses ayant touché un navire).
+     * @return Le score.
+     */
+    public int getScore() {
+        return this.score;
+    }
+
+    /**
+     * Ajouté: Retourne le nombre de tirs adverses manqués (dans l'eau) sur cette grille.
+     * @return Le nombre de tirs manqués.
+     */
+    public int getTirsManques() {
+        return this.tirsManques;
+    }
+
+
+    /**
+     * Tente de placer un navire sur la grille.
      * Vérifie les limites et les chevauchements.
      * @param navire Le navire à placer.
      * @param pointDepart La case de départ (coin sup/gauche).
@@ -97,25 +118,21 @@ public class Grille {
         if (navire == null || pointDepart == null) return false;
 
         List<Point> positionsAOccuper = new ArrayList<>();
-        Point courant = new Point(pointDepart); // Copie pour itération
+        Point courant = new Point(pointDepart);
 
         // 1. Vérifier la validité de toutes les positions
         for (int i = 0; i < navire.getTaille(); i++) {
-            // Le point est dans la grille?
             if (!estPointValide(courant)) {
-                System.out.println("Placement échoué: Hors grille en " + courant);
+                System.err.println("Placement échoué: Hors grille en " + courant + " pour navire taille " + navire.getTaille());
                 return false;
             }
-            // La case est déjà occupée ?
-            Case c = getCase(courant); // Le point est valide ici
+            Case c = getCase(courant);
             if (c.getNavire() != null) {
-                System.out.println("Placement échoué: Case déjà occupée en " + courant);
+                System.err.println("Placement échoué: Case déjà occupée en " + courant + " pour navire taille " + navire.getTaille());
                 return false;
             }
+            positionsAOccuper.add(new Point(courant));
 
-            positionsAOccuper.add(new Point(courant)); // Ajoute une copie
-
-            // Calculer la position suivante
             if (vertical) {
                 courant.y++;
             } else {
@@ -123,14 +140,58 @@ public class Grille {
             }
         }
 
-        // Si toutes les positions sont valides, placer le navire
-        System.out.print("Placement réussi pour navire taille " + navire.getTaille() + " en " + pointDepart + (vertical ? " (V)" : " (H)") + " sur cases: ");
+        // 2. Si toutes les positions sont valides, placer le navire
+        // System.out.print("Placement réussi pour navire taille " + navire.getTaille() + " en " + pointDepart + (vertical ? " (V)" : " (H)") + " sur cases: ");
         for (Point p : positionsAOccuper) {
-            System.out.print("(" + p.x + "," + p.y + ") ");
-            getCase(p).setNavire(navire); // Assigne le même objet navire à chaque case
+           // System.out.print("(" + p.x + "," + p.y + ") ");
+            getCase(p).setNavire(navire);
         }
-        System.out.println();
-        return true; // Placement réussi
+        // System.out.println();
+        return true;
+    }
+
+
+    /**
+     * Ajouté: Enregistre un tir à une position donnée sur CETTE grille.
+     * Met à jour le score ou les tirs manqués, marque la case comme touchée,
+     * et réduit la vie du navire si touché.
+     * @param point La position (Point) du tir.
+     * @return true si un navire est touché, false si le tir est manqué, sur une case déjà visée, ou invalide.
+     */
+    public boolean tirer(Point point) {
+        if (!estPointValide(point)) {
+            System.err.println("Tir hors grille : " + point);
+            return false; // Tir hors grille
+        }
+
+        Case caseVisee = getCase(point); // Récupère la case ciblée (ne peut pas être null ici)
+
+        // Vérifie si la case a déjà été touchée
+        if (caseVisee.estTouchee()) {
+            System.out.println("Case (" + point.x + "," + point.y + ") déjà visée."); // Message utilisateur
+            return false; // Case déjà visée, on ne fait rien de plus
+        }
+
+        // Marque la case comme touchée, qu'il y ait un navire ou non
+        caseVisee.recevoirTir();
+
+        Navire navireTouche = caseVisee.getNavire(); // Récupère le navire sur la case (peut être null)
+
+        if (navireTouche != null) {
+            // Il y a un navire sur la case touchée
+            navireTouche.recevoirTir(); // Réduit la vie du navire
+            this.score++; // Augmente le score (nombre de touches sur cette grille)
+            System.out.println(" -> Touché ! Navire en (" + point.x + "," + point.y + "). Points restants: " + navireTouche.getTaille());
+            if (navireTouche.estCoule()) {
+                System.out.println("   -> Navire coulé !");
+            }
+            return true; // Touché !
+        } else {
+            // Pas de navire sur la case touchée
+            this.tirsManques++; // Augmente le compteur de tirs manqués
+            System.out.println(" -> Manqué (dans l'eau) en (" + point.x + "," + point.y + ").");
+            return false; // Manqué ! (tir dans l'eau)
+        }
     }
 
 }
