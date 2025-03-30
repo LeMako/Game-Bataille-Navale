@@ -132,4 +132,5 @@ public class Grille {
         System.out.println();
         return true; // Placement réussi
     }
+
 }

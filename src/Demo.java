@@ -1,49 +1,58 @@
 package src;
 
 import modele.Grille;
-import modele.Navire;  
+import modele.Navire;
 import java.awt.Point;
+import javax.swing.JFrame;
+import vue.VuePanneauJeu;
 
-public class Demo {
+
+public class Demo extends JFrame {
+    // private static final int LARGEUR = 800;
+    // private static final int HAUTEUR = 450;
+
+    /**
+     * Constructeur de la fenêtre principale.
+     * @param panneauJeu Le JPanel contenant la vue du jeu.
+     */
+    public Demo(VuePanneauJeu panneauJeu) {
+        super("Bataille Navale"); // Titre
+
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Quitter l'appli quand on ferme
+        //this.setSize(LARGEUR, HAUTEUR);
+        this.setResizable(false);         // Empêcher redimensionnement
+        this.setLocationRelativeTo(null); // Centrer à l'écran
+
+        this.add(panneauJeu); // Ajoute notre panneau de dessin à la fenêtre
+        this.pack(); // Ajuste la taille de la fenêtre au contenu (setPreferredSize du panneau)
+    }
+
 
     public static void main(String[] args) {
-        System.out.println("Lancement Bataille Navale (Placement)");
+        System.out.println("Lancement Bataille Navale (Affichage Grilles Vides)");
 
         final int TAILLE_GRILLE = 10;
 
         // Création du Modèle
         Grille grilleJoueur = new Grille(TAILLE_GRILLE, true);
-        // Grille grilleOrdinateur = new Grille(TAILLE_GRILLE, false);
+        Grille grilleOrdinateur = new Grille(TAILLE_GRILLE, false);
 
-        System.out.println("\n--- Tentative de placement sur grille Joueur ---");
+        // Navire porteAvion = new Navire(5);
+        // grilleJoueur.placerNavire(porteAvion, new Point(0, 0), false);
 
-        // Création de quelques navires
-        Navire porteAvion = new Navire(5);
-        Navire croiseur = new Navire(4);
-        Navire contreTorpilleur = new Navire(3);
-        Navire torpilleur = new Navire(2);
+        // Création de la Vue
+        VuePanneauJeu panneauJeu = new VuePanneauJeu(grilleJoueur, grilleOrdinateur);
 
-        // Placement fixe (pour tester la logique placerNavire)
-        boolean p1 = grilleJoueur.placerNavire(porteAvion, new Point(0, 0), false); // Horizontal A1-E1
-        boolean p2 = grilleJoueur.placerNavire(croiseur, new Point(0, 2), true);   // Vertical A3-A6
-        boolean p3 = grilleJoueur.placerNavire(contreTorpilleur, new Point(5, 5), false); // Horizontal F6-H6
-        boolean p4 = grilleJoueur.placerNavire(torpilleur, new Point(8, 8), true);   // Vertical I9-I10
+        // Création de la Fenêtre
+        Demo fenetreJeu = new Demo(panneauJeu);
 
-        // Tentative de placement invalide (chevauchement)
-        System.out.println("\nTentative de placement invalide (chevauchement):");
-        Navire autreNavire = new Navire(3);
-        boolean p5 = grilleJoueur.placerNavire(autreNavire, new Point(0, 0), true); // Devrait échouer
+        // Affichage de la Fenêtre
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                fenetreJeu.setVisible(true); // Rend la fenêtre visible
+            }
+        });
 
-        // Tentative de placement invalide (hors grille)
-        System.out.println("\nTentative de placement invalide (hors grille):");
-        boolean p6 = grilleJoueur.placerNavire(autreNavire, new Point(8, 8), false); // Devrait échouer
-
-        System.out.println("\nRésultats placements (true=réussi, false=échoué):");
-        System.out.println("P1 (Porte-avion): " + p1);
-        System.out.println("P2 (Croiseur): " + p2);
-        System.out.println("P3 (Contre-torp.): " + p3);
-        System.out.println("P4 (Torpilleur): " + p4);
-        System.out.println("P5 (Invalide chev.): " + p5);
-        System.out.println("P6 (Invalide hors): " + p6);
+        System.out.println("Fenêtre lancée.");
     }
 }
