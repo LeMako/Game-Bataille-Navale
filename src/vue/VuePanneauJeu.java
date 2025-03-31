@@ -2,7 +2,6 @@ package vue;
 
 import java.awt.*;
 import javax.swing.*;
-
 import modele.Grille;
 import modele.Case;
 import modele.Navire;
@@ -29,7 +28,7 @@ public class VuePanneauJeu extends JPanel {
     private Color couleurFond = Color.BLACK;
     private Color couleurGrille = Color.DARK_GRAY;
     private Color couleurBordure = Color.GRAY;
-    private Color couleurNavireHumain = Color.BLUE; // Ajouté: Couleur pour les navires du joueur
+    private Color couleurNavireHumain = Color.BLUE; // Couleur pour les navires du joueur
 
     /**
      * Construit le panneau d'affichage.
@@ -87,7 +86,6 @@ public class VuePanneauJeu extends JPanel {
 
     /**
      * Dessine UNE grille complète
-     * Remplace l'ancienne méthode dessinerGrilleVide.
      * @param g Graphics2D
      * @param grille La grille à dessiner (modèle).
      * @param x Position X du coin supérieur gauche de la grille.
@@ -111,6 +109,7 @@ public class VuePanneauJeu extends JPanel {
                     // Si c'est la grille humaine ET qu'il y a un navire, on le dessine
                     couleurFondCase = couleurNavireHumain;
                 }
+                // (Note : On ne dessine pas encore les navires ennemis cachés)
                 dessinerRectanglePlein(g, couleurFondCase, caseX, caseY);
 
                 // 2. Dessiner la bordure de la case
@@ -118,8 +117,6 @@ public class VuePanneauJeu extends JPanel {
             }
         }
     }
-
-    // Méthodes d'aide pour le dessin des cases
 
     /**
      * Dessine le contour d'une case.
@@ -143,5 +140,19 @@ public class VuePanneauJeu extends JPanel {
     private void dessinerRectanglePlein(Graphics g, Color couleur, int x, int y) {
         g.setColor(couleur);
         g.fillRect(x, y, TAILLE_CASE_PX, TAILLE_CASE_PX);
+    }
+
+    // Ajouté: Accesseurs nécessaires pour le Contrôleur
+    /** @return Coordonnée X du coin supérieur gauche de la grille ordinateur. */
+    public int getOrdiGridX() { 
+        return grilleOrdiX; 
+    }
+    /** @return Coordonnée Y du coin supérieur gauche de la grille ordinateur. */
+    public int getOrdiGridY() { 
+        return grilleOrdiY; 
+    }
+    /** @return La taille d'une case en pixels. */
+    public int getTailleCasePx() { 
+        return TAILLE_CASE_PX; 
     }
 }

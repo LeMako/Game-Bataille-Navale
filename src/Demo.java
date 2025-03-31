@@ -1,4 +1,3 @@
-// Garde les imports existants de Commit 3
 package src;
 
 import modele.Grille;
@@ -6,7 +5,7 @@ import modele.Navire;
 import java.awt.Point;
 import javax.swing.JFrame;
 import vue.VuePanneauJeu;
-
+import controleur.ControleurJeu;
 
 public class Demo extends JFrame {
     // private static final int LARGEUR = 800;
@@ -39,16 +38,31 @@ public class Demo extends JFrame {
         Grille grilleOrdinateur = new Grille(TAILLE_GRILLE, false);
 
         // Placement manuel d'un navire pour tester l'affichage
-        Navire porteAvion = new Navire(5); // Exe: Porte-avion
-        boolean placeOk = grilleJoueur.placerNavire(porteAvion, new Point(1, 1), false); // Horizontal en B2 (indices 1,1)
-        if (placeOk) {
-            System.out.println("Navire de test placé pour le joueur.");
-        } else {
-            System.err.println("ERREUR lors du placement du navire de test !");
-        }
+        // Navires Joueur
+        System.out.println("Placement navires joueur...");
+        Navire porteAvionJ = new Navire(5);
+        grilleJoueur.placerNavire(porteAvionJ, new Point(1, 1), false); // B2 Horizontal
+        Navire torpilleurJ = new Navire(2);
+        grilleJoueur.placerNavire(torpilleurJ, new Point(5, 5), true); // F6 Vertical
+
+        // Navires Ordinateur (pour que le joueur puisse tirer dessus)
+        System.out.println("Placement navires ordinateur...");
+        Navire croiseurO = new Navire(4);
+        grilleOrdinateur.placerNavire(croiseurO, new Point(3, 4), true); // D5 Vertical
+        Navire sousMarinO = new Navire(3);
+        grilleOrdinateur.placerNavire(sousMarinO, new Point(8, 1), false); // I2 Horizontal
+        Navire contreTorpilleurO = new Navire(3);
+        grilleOrdinateur.placerNavire(contreTorpilleurO, new Point(0, 8), false); // A9 Horizontal
+
 
         // Création de la Vue
         VuePanneauJeu panneauJeu = new VuePanneauJeu(grilleJoueur, grilleOrdinateur);
+
+        // Création du Contrôleur
+        ControleurJeu controleur = new ControleurJeu(grilleJoueur, grilleOrdinateur, panneauJeu);
+
+        // Liaison Vue -> Contrôleur
+        panneauJeu.addMouseListener(controleur); // La vue notifie le contrôleur des clics
 
         // Création et Affichage de la Fenêtre
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -59,6 +73,6 @@ public class Demo extends JFrame {
             }
         });
 
-        System.out.println("Fenêtre lancée.");
+        System.out.println("Fenêtre lancée. Cliquez sur la grille de droite pour tirer.");
     }
 }
