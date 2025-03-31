@@ -3,12 +3,12 @@ package modele;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Grille {
     private int taille;
     private Case[][] cases;
     private boolean estGrilleHumain;
-    // Ajouté: Compteurs pour les tirs
     private int score; // Nombre de tirs réussis (touché un bateau adverse sur CETTE grille)
     private int tirsManques; // Nombre de tirs dans l'eau (ratés) sur CETTE grille
 
@@ -27,7 +27,6 @@ public class Grille {
         this.score = 0; // Initialisation
         this.tirsManques = 0; // Initialisation
         initialiserGrille();
-        // System.out.println("Création Grille taille " + taille + "x" + taille + " pour " + (estGrilleHumain ? "Joueur" : "Ordinateur"));
     }
 
     /**
@@ -90,7 +89,7 @@ public class Grille {
     }
 
     /**
-     * Ajouté: Retourne le score actuel sur cette grille (nombre de tirs adverses ayant touché un navire).
+     * Retourne le score actuel sur cette grille (nombre de tirs adverses ayant touché un navire).
      * @return Le score.
      */
     public int getScore() {
@@ -98,7 +97,7 @@ public class Grille {
     }
 
     /**
-     * Ajouté: Retourne le nombre de tirs adverses manqués (dans l'eau) sur cette grille.
+     * Retourne le nombre de tirs adverses manqués (dans l'eau) sur cette grille.
      * @return Le nombre de tirs manqués.
      */
     public int getTirsManques() {
@@ -141,18 +140,15 @@ public class Grille {
         }
 
         // 2. Si toutes les positions sont valides, placer le navire
-        // System.out.print("Placement réussi pour navire taille " + navire.getTaille() + " en " + pointDepart + (vertical ? " (V)" : " (H)") + " sur cases: ");
         for (Point p : positionsAOccuper) {
-           // System.out.print("(" + p.x + "," + p.y + ") ");
             getCase(p).setNavire(navire);
         }
-        // System.out.println();
         return true;
     }
 
 
     /**
-     * Ajouté: Enregistre un tir à une position donnée sur CETTE grille.
+     * Enregistre un tir à une position donnée sur CETTE grille.
      * Met à jour le score ou les tirs manqués, marque la case comme touchée,
      * et réduit la vie du navire si touché.
      * @param point La position (Point) du tir.
@@ -168,7 +164,7 @@ public class Grille {
 
         // Vérifie si la case a déjà été touchée
         if (caseVisee.estTouchee()) {
-            System.out.println("Case (" + point.x + "," + point.y + ") déjà visée."); // Message utilisateur
+            // System.out.println("Case (" + point.x + "," + point.y + ") déjà visée."); // Déjà géré par le contrôleur
             return false; // Case déjà visée, on ne fait rien de plus
         }
 
@@ -194,4 +190,42 @@ public class Grille {
         }
     }
 
+    /**
+     * Génère un point aléatoire valide sur la grille.
+     * @param random Le générateur de nombres aléatoires à utiliser.
+     * @return Un Point (x, y) aléatoire dans les limites de la grille.
+     */
+    private Point getPointAleatoire(Random random) {
+        // Assure que random n'est pas null si besoin d'appel externe futur
+        // if (random == null) random = new Random();
+        return new Point(random.nextInt(taille), random.nextInt(taille));
+    }
+
+    /**
+     * Simule un tir de l'ordinateur sur CETTE grille (qui est supposée être la grille humaine).
+     * L'ordinateur choisit une case aléatoire qui n'a pas encore été touchée.
+     * @param random Le générateur de nombres aléatoires.
+     */
+    public void tirOrdinateur(Random random) {
+        Point pointCible;
+        Case caseCible;
+        int tentativesMax = taille * taille * 2; // Sécurité pour éviter boucle infinie
+        int tentatives = 0;
+
+        // Boucle pour trouver une case non déjà touchée
+        do {
+            pointCible = getPointAleatoire(random);
+            caseCible = getCase(pointCible); // On sait que le point est dans la grille
+            tentatives++;
+            // Si la case est invalide (ne devrait pas arriver) ou déjà touchée, on réessaie
+        } while ((caseCible == null || caseCible.estTouchee()) && tentatives < tentativesMax);
+
+        if (tentatives >= tentativesMax) {
+             System.err.println("Erreur: Impossible de trouver une case non touchée pour le tir ordinateur après " + tentatives + " tentatives.");
+             return; // Ne pas tirer si on n'a pas trouvé de case valide
+        }
+
+        System.out.println("L'ordinateur tire en : (" + pointCible.x + ", " + pointCible.y + ")");
+        tirer(pointCible); // Effectue le tir sur cette grille (la grille humaine)
+    }
 }

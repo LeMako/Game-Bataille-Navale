@@ -3,6 +3,7 @@ package controleur;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Random;
 import modele.Grille;
 import modele.Case;
 import vue.VuePanneauJeu;
@@ -16,6 +17,7 @@ public class ControleurJeu extends MouseAdapter {
     private Grille grilleHumain;
     private Grille grilleOrdinateur;
     private VuePanneauJeu vuePanneau;
+    private Random random; // Générateur pour l'IA
 
     /**
      * Construit le contrôleur du jeu.
@@ -27,6 +29,7 @@ public class ControleurJeu extends MouseAdapter {
         this.grilleHumain = grilleHumain;
         this.grilleOrdinateur = grilleOrdinateur;
         this.vuePanneau = vuePanneau;
+        this.random = new Random(); // Initialisation du générateur
     }
 
     @Override
@@ -39,14 +42,14 @@ public class ControleurJeu extends MouseAdapter {
         int tailleCasePx = vuePanneau.getTailleCasePx();
         int grilleOrdiX = vuePanneau.getOrdiGridX();
         int grilleOrdiY = vuePanneau.getOrdiGridY();
-        int tailleGrille = grilleOrdinateur.getTaille(); // Taille logique (ex: 10)
-        int tailleGrillePx = tailleGrille * tailleCasePx; // Taille graphique en pixels
+        int tailleGrille = grilleOrdinateur.getTaille();
+        int tailleGrillePx = tailleGrille * tailleCasePx;
 
         // Vérifier si le clic est DANS la zone de la grille de l'ordinateur
         if (clicX >= grilleOrdiX && clicX < grilleOrdiX + tailleGrillePx &&
             clicY >= grilleOrdiY && clicY < grilleOrdiY + tailleGrillePx) {
 
-            // Calculer les indices (i, j) de la case cliquée dans la grille logique
+            // Calculer les indices (i, j) de la case cliquée
             int i = (clicX - grilleOrdiX) / tailleCasePx;
             int j = (clicY - grilleOrdiY) / tailleCasePx;
             Point pointCible = new Point(i, j);
@@ -54,15 +57,18 @@ public class ControleurJeu extends MouseAdapter {
             // Vérifier si la case cible existe et n'a pas déjà été touchée
             Case caseVisee = grilleOrdinateur.getCase(pointCible);
             if (caseVisee != null && !caseVisee.estTouchee()) {
-                // C'est une cible valide et non touchée : le joueur tire
-                System.out.println("Joueur cible : (" + pointCible.x + ", " + pointCible.y + ")");
-                grilleOrdinateur.tirer(pointCible); // Appel au modèle pour effectuer le tir
 
-                // Demander à la vue de se redessiner pour (potentiellement) montrer le résultat
+                // Tour du Joueur
+                System.out.println("Joueur cible : (" + pointCible.x + ", " + pointCible.y + ")");
+                grilleOrdinateur.tirer(pointCible);
                 vuePanneau.repaint();
 
+                // Tour de l'Ordinateur
+                System.out.println("--- Tour de l'Ordinateur ---");
+                grilleHumain.tirOrdinateur(random); // L'ordinateur tire sur la grille humaine
+                vuePanneau.repaint(); // Redessine après le tir de l'ordinateur
+
             } else if (caseVisee != null && caseVisee.estTouchee()) {
-                // Informer que la case est déjà jouée
                 System.out.println("Case ("+ i + "," + j +") déjà visée !");
             }
 
